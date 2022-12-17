@@ -23,11 +23,21 @@ import time
 import random
 import string
 partition = 10
-sampleSize = 50
+sampleSize = 50000
 defaultLength = 8
 baud = 9600 
 option = ""
 dictumSize = 1
+def delay(ngram):
+    print()
+    print(ngram)
+    print(3)
+    time.sleep(1)
+    print(2)
+    time.sleep(1)
+    print(1)
+    time.sleep(1)
+    return
 def resetDataFile(dataFile):
     f = open(dataFile, "w", encoding="utf8")
     f.close()
@@ -51,7 +61,7 @@ def returnNgrams(data,length, mode):
                 ngram += data[pos+n] + " "
             n+=1
         return ngram
-def predict(inputFile,model):#refactor into construction using gen() input rather than record() input
+def predict(user,inputFile,model):#refactor into construction using gen() input rather than record() input
     db = []
     model = keras.models.load_model(model)
     with open(inputFile, encoding='ISO-8859-1') as f:
@@ -64,6 +74,7 @@ def predict(inputFile,model):#refactor into construction using gen() input rathe
         if predictions[i] == 0:
             db.append(str(0))
         if predictions[i] == 1:
+            delay(user)
             db.append(str(1))
         print('%s => %d' % (X[i].tolist(), predictions[i]))
     return db
@@ -80,7 +91,7 @@ def train(dataFile,modelName):
     model.add(Dense(50, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(X_train, y_train, epochs=150, batch_size=10, verbose=0)
+    model.fit(X_train, y_train, epochs=5, batch_size=10, verbose=1)
     _, accuracy = model.evaluate(X_test, y_test)
     print('Accuracy: %.2f' % (accuracy * 100))
     model.save(modelName)
@@ -117,13 +128,19 @@ while(True):
         print("press CTRL-C to exit menu.")
         while(True):
             resetDataFile("SignalData.csv")
-            option = input("db sample, input sample or suggest word? [d/i/s]:")
+            option = input("db sample, input sample, auto generate or suggest word? [d/i/a/s]:")
             if option == "d":
                 recordData(returnSizedNgram(),0, "SignalData.csv")#mode,stress,outputFile
-                predict(recordData(returnSizedNgram(),0,"SignalData.csv"),"stress_model")
+                predict(user,recordData(returnSizedNgram(),0,"SignalData.csv"),"stress_model")
             if option == "i":
-                user = input("enter word:")
+                user = returnRandomChar()
                 recordData(user,0, "SignalData.csv")#mode,stress,outputFile
-                predict(recordData(user,0,"SignalData.csv"),"stress_model")
+                predict(user,recordData(user,0,"SignalData.csv"),"stress_model")
+            if option == "a":
+                while(True):
+                    user = returnRandomChar()
+                    print(user)
+                    recordData(user,0, "SignalData.csv")#mode,stress,outputFile
+                    predict(user,recordData(user,0,"SignalData.csv"),"stress_model")
             if option == "s":
                 print(returnSizedNgram())
