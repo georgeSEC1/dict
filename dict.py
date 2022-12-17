@@ -21,12 +21,13 @@ import tensorflow as tf
 import numpy as np
 import time
 import random
+import string
 partition = 10
-sampleSize = 5
-defaultLength = sampleSize*4
+sampleSize = 50
+defaultLength = 8
 baud = 9600 
 option = ""
-dictumSize = 5
+dictumSize = 1
 def resetDataFile(dataFile):
     f = open(dataFile, "w", encoding="utf8")
     f.close()
@@ -84,41 +85,45 @@ def train(dataFile,modelName):
     print('Accuracy: %.2f' % (accuracy * 100))
     model.save(modelName)
 def recordData(ngram,stress,dataFile):#Adversarial training between easy and difficult n-grams, full 2d grapheme differentiation...
-    record = np.pad(list(set(map(ord,ngram))), pad_width=defaultLength, mode='constant')
-    record = np.append(record, str(stress).split(), axis=0)
-    total = np.array(record[:defaultLength])
-    print(record)
+    record = np.append(list(map(ord,ngram)), str(stress).split(), axis=0)
+    record = np.pad(record, pad_width=defaultLength-len(list(map(ord,ngram))),mode='constant')
+    total = np.array(record[:defaultLength+1])
     testX = open(dataFile, "a", encoding="utf8")
     testX.write(','.join(total)+"\n")
     testX.close()
     return dataFile
+def returnSizedNgram():
+    while(True):
+        ngram = returnNgrams(data,dictumSize,"random")
+        if len(ngram) < defaultLength:
+            break
+    return ngram
+def returnRandomChar():
+    letters = string.ascii_lowercase
+    length = random.randint(1,8)
+    nonWord = ''.join(random.choice(letters) for i in range(length))
+    return nonWord
 while(True):
     with open("db", encoding='ISO-8859-1') as f:
         data = f.read().split(" ")
     option = input("train or predict? [t/p]:")
     if option == "t":
         resetDataFile("SignalData.csv")
-        resetDataFile("StressDictum.txt")
         for i in range(sampleSize):
-            recordData(returnNgrams(data,dictumSize,"random"),1, "SignalData.csv")#mode,stress,outputFile
-        for i in range(sampleSize):
-            recordData(returnNgrams(data,dictumSize,"sequential"),0, "SignalData.csv")#mode,stress,outputFile
+            recordData(returnSizedNgram(),1, "SignalData.csv")#mode,stress,outputFile
+            recordData(returnRandomChar(),0, "SignalData.csv")#mode,stress,outputFile         
         train("SignalData.csv","stress_model")
     if option == "p":
         print("press CTRL-C to exit menu.")
         while(True):
+            resetDataFile("SignalData.csv")
             option = input("db sample, input sample or suggest ngram? [d/i/s]:")
-            ngram = ""
             if option == "d":
-                ngram = ""
-                while(True):
-                    ngram = returnNgrams(data,dictumSize,"sequential")
-                    if len(ngram) < defaultLength:
-                        break
-                predict(recordData(ngram,0,"X.dat"),"stress_model")
+                recordData(returnSizedNgram(),0, "SignalData.csv")#mode,stress,outputFile
+                predict(recordData(returnSizedNgram(),0,"SignalData.csv"),"stress_model")
             if option == "i":
-                ngram = input("enter n-gram: ")
-                if len(ngram) < defaultLength:
-                    predict(recordData(ngram,0,"X.dat"),"stress_model")
+                user = input("enter n-gram:")
+                recordData(user,0, "SignalData.csv")#mode,stress,outputFile
+                predict(recordData(user,0,"SignalData.csv"),"stress_model")
             if option == "s":
                 print(returnNgrams(data,dictumSize,"sequential"))
