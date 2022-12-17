@@ -75,6 +75,10 @@ def predict(user,inputFile,model):#refactor into construction using gen() input 
             db.append(str(0))
         if predictions[i] == 1:
             delay(user)
+            f = open("NewWords", "a", encoding="utf8")
+            f.write(user)
+            f.write("\n")
+            f.close()
             db.append(str(1))
         print('%s => %d' % (X[i].tolist(), predictions[i]))
     return db
@@ -138,6 +142,7 @@ while(True):
                 predict(user,recordData(user,0,"SignalData.csv"),"stress_model")
             if option == "a":
                 while(True):
+                    resetDataFile("SignalData.csv")
                     user = returnRandomChar()
                     print(user)
                     recordData(user,0, "SignalData.csv")#mode,stress,outputFile
