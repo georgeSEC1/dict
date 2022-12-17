@@ -117,13 +117,13 @@ while(True):
         print("press CTRL-C to exit menu.")
         while(True):
             resetDataFile("SignalData.csv")
-            option = input("db sample, input sample or suggest ngram? [d/i/s]:")
+            option = input("db sample, input sample or suggest word? [d/i/s]:")
             if option == "d":
                 recordData(returnSizedNgram(),0, "SignalData.csv")#mode,stress,outputFile
                 predict(recordData(returnSizedNgram(),0,"SignalData.csv"),"stress_model")
             if option == "i":
-                user = input("enter n-gram:")
+                user = input("enter word:")
                 recordData(user,0, "SignalData.csv")#mode,stress,outputFile
                 predict(recordData(user,0,"SignalData.csv"),"stress_model")
             if option == "s":
-                print(returnNgrams(data,dictumSize,"sequential"))
+                print(returnSizedNgram())
