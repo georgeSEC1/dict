@@ -121,7 +121,7 @@ def returnRandomChar():
 file = returnRandomChar()
 while(True):
     resetDataFile(file)
-    user = returnRandomChar() + ".dat"
+    user = returnRandomChar()
     print()
     print(user)
     recordData(user,0, file)#mode,stress,outputFile
